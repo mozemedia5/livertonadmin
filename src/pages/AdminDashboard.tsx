@@ -17,7 +17,9 @@ import {
   getOrders, 
   getContactSubmissions, 
   getDonations,
-  getTotalVisits
+  getTotalVisits,
+  type ContactSubmission,
+  type Donation
 } from '@/lib/firestore';
 import { toast } from 'sonner';
 
@@ -29,6 +31,8 @@ const AdminDashboard = () => {
     totalDonations: 0,
     totalVisits: 0,
   });
+  const [contacts, setContacts] = useState<ContactSubmission[]>([]);
+  const [donations, setDonations] = useState<Donation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -58,6 +62,8 @@ const AdminDashboard = () => {
         totalDonations: donations.length,
         totalVisits: visits,
       });
+      setContacts(contacts);
+      setDonations(donations);
     } catch (error) {
       console.error('Error loading stats:', error);
     } finally {
@@ -195,6 +201,76 @@ const AdminDashboard = () => {
                   <div className="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
                     <Eye className="w-6 h-6 text-amber-400" />
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Contact Submissions & Donations */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-emerald-400" />
+                  Recent Contacts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                  {contacts.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No contacts yet</p>
+                  ) : (
+                    contacts.map((contact) => (
+                      <div key={contact.id} className="p-4 rounded-lg border border-border bg-muted/20">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-semibold">{contact.fullName}</h4>
+                          <span className="text-xs text-muted-foreground">
+                            {contact.createdAt?.toDate().toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-xs text-indigo-400 mb-1">{contact.subject}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{contact.message}</p>
+                        <p className="text-xs text-muted-foreground mt-2">{contact.email}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Heart className="w-5 h-5 mr-2 text-pink-400" />
+                  Recent Donations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                  {donations.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No donations yet</p>
+                  ) : (
+                    donations.map((donation) => (
+                      <div key={donation.id} className="p-4 rounded-lg border border-border bg-muted/20">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-semibold">{donation.fullName}</h4>
+                          <span className="text-sm font-bold text-pink-400">
+                            {donation.amount.toLocaleString()} UGX
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-1">{donation.reason}</p>
+                        {donation.message && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 italic">"{donation.message}"</p>
+                        )}
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-xs text-muted-foreground">{donation.email}</span>
+                          <Badge variant="outline" className="text-[10px] uppercase">
+                            {donation.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
